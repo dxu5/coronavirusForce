@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<title>Derek Xu COVID-19 Graph</title>
+<link rel="icon" href="./favicon.ico" />
+<h1
+  style="
+    text-align: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+      Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  "
+>
+  COVID-19 United States Cases and Deaths by State
+</h1>
+<h3
+  style="
+    text-align: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+      Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  "
+>
+  by Derek Xu
+</h3>
+
+<p
+  style="
+    text-align: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+      Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  "
+>
+  This force-directed graph was made using d3.js and current coronavirus data
+  from the Center for Disease Control (CDC). <br />Hovering over nodes on the
+  graph will display current case and death numbers due to coronavirus in each
+  state. <br />
+  This graph is to provide users with information about the current coronavirus
+  pandemic in a easily digestible and interactive format.
+</p>
+
+<svg width="960" height="300"></svg>
+<link rel="stylesheet" href="./style.css" />
+<style>
+  div.tooltip {
+    position: absolute;
+    text-align: center;
+    width: 100px;
+    height: 45px;
+    padding: 2px;
+    font: 12px sans-serif;
+    background: lightsteelblue;
+    border: 0px;
+    border-radius: 8px;
+    pointer-events: none;
+  }
+</style>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<body style="background-color: #f7f6f2;">
+  <script>
+    var baseNodes = [
+      //   super low
+      {
+        id: "superLow",
+        group: 0,
+        label: "0 to 1,000 Cases",
+        fullName: "0 to 1,000",
+        cases: "cases",
+        deaths: "and deaths",
+        level: 1,
+      },
+      {
+        id: "montana",
+        group: 0,
+        label: "MT",
+        fullName: "Montana",
+        cases: "479 Cases",
+        deaths: "16 Deaths",
+        level: 2,
+      },
+      {
+        id: "wyoming",
+        group: 0,
+        label: "WY",
+        fullName: "Wyoming",
+        cases: "843 Cases",
+        deaths: "12 Deaths",
+        level: 2,
+      },
+      {
+        id: "vermont",
+        group: 0,
+        label: "VT",
+        fullName: "Vermont",
+        cases: "962 Cases",
+        deaths: "54 Deaths",
+        level: 2,
+      },
+      {
+        id: "alaska",
+        group: 0,
+        label: "AK",
+        fullName: "Alaska",
+        cases: "409 Cases",
+        deaths: "10 Deaths",
+        level: 2,
+      },
+      {
+        id: "hawaii",
+        group: 0,
+        label: "HI",
+        fullName: "Hawaii",
+        cases: "595 Cases",
+        deaths: "17 Deaths",
+        level: 2,
+      },
+      //  low
+      {
+        id: "low",
+        group: 1,
+        label: "1,001 to 5,000 Cases",
+        fullName: "1,001 to 5,000",
+        cases: "cases",
+        deaths: "and deaths",
+        level: 3,
+      },
+      {
+        id: "maine",
+        group: 1,
+        label: "ME",
+        fullName: "Maine",
+        cases: "2,109 Cases",
+        deaths: "79 Deaths",
+        level: 4,
+      },
+      {
+        id: "newHampshire",
+        group: 1,
+        label: "NH",
+        fullName: "New Hampshire",
+        cases: "4,197 Cases",
+        deaths: "210 Deaths",
+        level: 4,
+      },
+      {
+        id: "westVirginia",
+        group: 1,
+        label: "WV",
+        fullName: "West Virginia",
+        cases: "1,782 Cases",
+        deaths: "73 Deaths",
+        level: 4,
+      },
+      {
+        id: "southDakota",
+        group: 1,
+        label: "SD",
+        fullName: "South Dakota",
+        cases: "4,586 Cases",
+        deaths: "50 Deaths",
+        level: 4,
+      },
+      {
+        id: "northDakota",
+        group: 1,
+        label: "ND",
+        fullName: "North Dakota",
+        cases: "2,457 Cases",
+        deaths: "54 Deaths",
+        level: 4,
+      },
+      {
+        id: "idaho",
+        group: 1,
+        label: "ID",
+        fullName: "Idaho",
+        cases: "2,684 Cases",
+        deaths: "79 Deaths",
+        level: 4,
+      },
+      {
+        id: "oregon",
+        group: 1,
+        label: "OR",
+        fullName: "Oregon",
+        cases: "3,949 Cases",
+        deaths: "148 Deaths",
+        level: 4,
+      },
+      // medium
+      {
+        id: "medium",
+        group: 2,
+        label: "5,001 to 10,000 Cases",
+        fullName: "5,001 to 10,000",
+        cases: "cases",
+        deaths: "and deaths",
+        level: 5,
+      },
+      {
+        id: "delaware",
+        group: 2,
+        label: "DE",
+        fullName: "Delaware",
+        cases: "9,067 Cases",
+        deaths: "337 Deaths",
+        level: 6,
+      },
+      {
+        id: "washingtonDC",
+        group: 2,
+        label: "DC",
+        fullName: "Washington D.C.",
+        cases: "8,225 Cases",
+        deaths: "440 Deaths",
+        level: 6,
+      },
+      {
+        id: "kentucky",
+        group: 2,
+        label: "KY",
+        fullName: "Kentucky",
+        cases: "8,571 Cases",
+        deaths: "391 Deaths",
+        level: 6,
+      },
+      {
+        id: "arkansas",
+        group: 2,
+        label: "AR",
+        fullName: "Arkansas",
+        cases: "6,029 Cases",
+        deaths: "117 Deaths",
+        level: 6,
+      },
+      {
+        id: "oklahoma",
+        group: 2,
+        label: "OK",
+        fullName: "Oklahoma",
+        cases: "5,860 Cases",
+        deaths: "312 Deaths",
+        level: 6,
+      },
+      {
+        id: "kansas",
+        group: 2,
+        label: "KS",
+        fullName: "Kansas",
+        cases: "9,218 Cases",
+        deaths: "118 Deaths",
+        level: 6,
+      },
+      {
+        id: "newMexico",
+        group: 2,
+        label: "NM",
+        fullName: "New Mexico",
+        cases: "7,026 Cases",
+        deaths: "320 Deaths",
+        level: 6,
+      },
+      {
+        id: "utah",
+        group: 2,
+        label: "UT",
+        fullName: "Utah",
+        cases: "8,584 Cases",
+        deaths: "101 Deaths",
+        level: 6,
+      },
+      {
+        id: "nevada",
+        group: 2,
+        label: "NV",
+        fullName: "Nevada",
+        cases: "7,888 Cases",
+        deaths: "412 Deaths",
+        level: 6,
+      },
+      // medium high
+      {
+        id: "mediumHigh",
+        group: 3,
+        label: "10,001 to 20,000 Cases",
+        fullName: "10,001 to 20,000",
+        cases: "cases",
+        deaths: "and deaths",
+        level: 7,
+      },
+      {
+        id: "southCarolina",
+        group: 3,
+        label: "SC",
+        fullName: "South Carolina",
+        cases: "10,178 Cases",
+        deaths: "440 Deaths",
+        level: 8,
+      },
+      {
+        id: "alabama",
+        group: 3,
+        label: "AL",
+        fullName: "Alabama",
+        cases: "15,257 Cases",
+        deaths: "568 Deaths",
+        level: 8,
+      },
+      {
+        id: "mississippi",
+        group: 3,
+        label: "MS",
+        fullName: "Mississippi",
+        cases: "13,731 Cases",
+        deaths: "652 Deaths",
+        level: 8,
+      },
+      {
+        id: "missouri",
+        group: 3,
+        label: "MO",
+        fullName: "Missouri",
+        cases: "12,167 Cases",
+        deaths: "685 Deaths",
+        level: 8,
+      },
+      {
+        id: "nebraska",
+        group: 3,
+        label: "NE",
+        fullName: "Nebraska",
+        cases: "12,355 Cases",
+        deaths: "150 Deaths",
+        level: 8,
+      },
+      {
+        id: "iowa",
+        group: 3,
+        label: "IA",
+        fullName: "Iowa",
+        cases: "17,577 Cases",
+        deaths: "459 Deaths",
+        level: 8,
+      },
+      {
+        id: "wisconsin",
+        group: 3,
+        label: "WI",
+        fullName: "Wisconsin",
+        cases: "15,584 Cases",
+        deaths: "514 Deaths",
+        level: 8,
+      },
+      {
+        id: "arizona",
+        group: 3,
+        label: "AZ",
+        fullName: "Arizona",
+        cases: "16,561 Cases",
+        deaths: "806 Deaths",
+        level: 8,
+      },
+      {
+        id: "rhodeIsland",
+        group: 3,
+        label: "RI",
+        fullName: "Rhode Island",
+        cases: "14,065 Cases",
+        deaths: "608 Deaths",
+        level: 8,
+      },
+      // high
+      {
+        id: "high",
+        group: 4,
+        label: "20,001 to 40,000 Cases",
+        fullName: "20,001 to 40,000",
+        cases: "cases",
+        deaths: "and deaths",
+        level: 9,
+      },
+      {
+        id: "washington",
+        group: 4,
+        label: "WA",
+        fullName: "Washington",
+        cases: "20,065 Cases",
+        deaths: "1,070 Deaths",
+        level: 10,
+      },
+      {
+        id: "colorado",
+        group: 4,
+        label: "CO",
+        fullName: "Colorado",
+        cases: "24,226 Cases",
+        deaths: "1,331 Deaths",
+        level: 10,
+      },
+      {
+        id: "minnesota",
+        group: 4,
+        label: "MN",
+        fullName: "Minnesota",
+        cases: "21,960 Cases",
+        deaths: "908 Deaths",
+        level: 10,
+      },
+      {
+        id: "louisiana",
+        group: 4,
+        label: "LA",
+        fullName: "Louisiana",
+        cases: "37,914 Cases",
+        deaths: "2,690 Deaths",
+        level: 10,
+      },
+      {
+        id: "tennessee",
+        group: 4,
+        label: "TN",
+        fullName: "Tennessee",
+        cases: "20,731 Cases",
+        deaths: "339 Deaths",
+        level: 10,
+      },
+      {
+        id: "indiana",
+        group: 4,
+        label: "IN",
+        fullName: "Indiana",
+        cases: "31,715 Cases",
+        deaths: "1,984 Deaths",
+        level: 10,
+      },
+      {
+        id: "ohio",
+        group: 4,
+        label: "OH",
+        fullName: "Ohio",
+        cases: "32,447 Cases",
+        deaths: "1,987 Deaths",
+        level: 10,
+      },
+      {
+        id: "virginia",
+        group: 4,
+        label: "VA",
+        fullName: "Virginia",
+        cases: "39,342 Cases",
+        deaths: "1,236 Deaths",
+        level: 10,
+      },
+      {
+        id: "northCarolina",
+        group: 4,
+        label: "NC",
+        fullName: "North Carolina",
+        cases: "23,964 Cases",
+        deaths: "764 Deaths",
+        level: 10,
+      },
+      // super high
+      {
+        id: "superHigh",
+        group: 5,
+        label: "40,001 or more Cases",
+        fullName: "40,001 or more",
+        cases: "cases",
+        deaths: "and deaths",
+        level: 11,
+      },
+      {
+        id: "california",
+        group: 5,
+        label: "CA",
+        fullName: "California",
+        cases: "94,558 Cases",
+        deaths: "3,795 Deaths",
+        level: 12,
+      },
+      {
+        id: "texas",
+        group: 5,
+        label: "TX",
+        fullName: "Texas",
+        cases: "55,971 Cases",
+        deaths: "1,527 Deaths",
+        level: 12,
+      },
+      {
+        id: "michigan",
+        group: 5,
+        label: "MI",
+        fullName: "Michigan",
+        cases: "54,881 Cases",
+        deaths: "5,240 Deaths",
+        level: 12,
+      },
+      {
+        id: "illinois",
+        group: 5,
+        label: "IL",
+        fullName: "Illinois",
+        cases: "112,017 Cases",
+        deaths: "4,884 Deaths",
+        level: 12,
+      },
+      {
+        id: "georgia",
+        group: 5,
+        label: "GA",
+        fullName: "Georgia",
+        cases: "43,369 Cases",
+        deaths: "1,830 Deaths",
+        level: 12,
+      },
+      {
+        id: "florida",
+        group: 5,
+        label: "FL",
+        fullName: "Florida",
+        cases: "51,746 Cases",
+        deaths: "2,252 Deaths",
+        level: 12,
+      },
+      {
+        id: "maryland",
+        group: 5,
+        label: "MD",
+        fullName: "Maryland",
+        cases: "47,687 Cases",
+        deaths: "2,333 Deaths",
+        level: 12,
+      },
+      {
+        id: "pennsylvania",
+        group: 5,
+        label: "PA",
+        fullName: "Pennsylvania",
+        cases: "68,637 Cases",
+        deaths: "5,152 Deaths",
+        level: 12,
+      },
+      {
+        id: "newJersey",
+        group: 5,
+        label: "NJ",
+        fullName: "New Jersey",
+        cases: "155,092 Cases",
+        deaths: "11,144 Deaths",
+        level: 12,
+      },
+      {
+        id: "newYork",
+        group: 5,
+        label: "NY",
+        fullName: "New York",
+        cases: "365,405 Cases",
+        deaths: "29,193 Deaths",
+        level: 12,
+      },
+      {
+        id: "connecticut",
+        group: 5,
+        label: "CT",
+        fullName: "Connecticut",
+        cases: "40,873 Cases",
+        deaths: "3,742 Deaths",
+        level: 12,
+      },
+      {
+        id: "massachusetts",
+        group: 5,
+        label: "MA",
+        fullName: "Massachusetts",
+        cases: "93,271 Cases",
+        deaths: "6,416 Deaths",
+        level: 12,
+      },
+    ];
+
+    var baseLinks = [
+      //   superLow
+      { target: "superLow", source: "montana", strength: 0.45 },
+      { target: "superLow", source: "wyoming", strength: 0.45 },
+      { target: "superLow", source: "vermont", strength: 0.45 },
+      { target: "superLow", source: "alaska", strength: 0.45 },
+      { target: "superLow", source: "hawaii", strength: 0.45 },
+      // Low
+      { target: "low", source: "maine", strength: 0.45 },
+      { target: "low", source: "newHampshire", strength: 0.45 },
+      { target: "low", source: "westVirginia", strength: 0.45 },
+      { target: "low", source: "southDakota", strength: 0.45 },
+      { target: "low", source: "northDakota", strength: 0.45 },
+      { target: "low", source: "idaho", strength: 0.45 },
+      { target: "low", source: "oregon", strength: 0.45 },
+      // medium
+      { target: "medium", source: "delaware", strength: 0.45 },
+      { target: "medium", source: "washingtonDC", strength: 0.45 },
+      { target: "medium", source: "kentucky", strength: 0.45 },
+      { target: "medium", source: "arkansas", strength: 0.45 },
+      { target: "medium", source: "oklahoma", strength: 0.45 },
+      { target: "medium", source: "kansas", strength: 0.45 },
+      { target: "medium", source: "newMexico", strength: 0.45 },
+      { target: "medium", source: "utah", strength: 0.45 },
+      { target: "medium", source: "nevada", strength: 0.45 },
+      // medium High
+      { target: "mediumHigh", source: "southCarolina", strength: 0.45 },
+      { target: "mediumHigh", source: "alabama", strength: 0.45 },
+      { target: "mediumHigh", source: "mississippi", strength: 0.45 },
+      { target: "mediumHigh", source: "missouri", strength: 0.45 },
+      { target: "mediumHigh", source: "nebraska", strength: 0.45 },
+      { target: "mediumHigh", source: "iowa", strength: 0.45 },
+      { target: "mediumHigh", source: "wisconsin", strength: 0.45 },
+      { target: "mediumHigh", source: "arizona", strength: 0.45 },
+      { target: "mediumHigh", source: "rhodeIsland", strength: 0.45 },
+      // High
+      { target: "high", source: "washington", strength: 0.45 },
+      { target: "high", source: "colorado", strength: 0.45 },
+      { target: "high", source: "minnesota", strength: 0.45 },
+      { target: "high", source: "louisiana", strength: 0.45 },
+      { target: "high", source: "tennessee", strength: 0.45 },
+      { target: "high", source: "indiana", strength: 0.45 },
+      { target: "high", source: "ohio", strength: 0.45 },
+      { target: "high", source: "virginia", strength: 0.45 },
+      { target: "high", source: "northCarolina", strength: 0.45 },
+      // Super High
+      { target: "superHigh", source: "california", strength: 0.45 },
+      { target: "superHigh", source: "texas", strength: 0.45 },
+      { target: "superHigh", source: "michigan", strength: 0.45 },
+      { target: "superHigh", source: "illinois", strength: 0.45 },
+      { target: "superHigh", source: "georgia", strength: 0.45 },
+      { target: "superHigh", source: "florida", strength: 0.45 },
+      { target: "superHigh", source: "maryland", strength: 0.45 },
+      { target: "superHigh", source: "pennsylvania", strength: 0.45 },
+      { target: "superHigh", source: "newJersey", strength: 0.45 },
+      { target: "superHigh", source: "newYork", strength: 0.45 },
+      { target: "superHigh", source: "connecticut", strength: 0.45 },
+      { target: "superHigh", source: "massachusetts", strength: 0.45 },
+      // links to different states
+      { target: "california", source: "nevada", strength: 0.1 },
+      { target: "california", source: "oregon", strength: 0.1 },
+      { target: "california", source: "arizona", strength: 0.1 },
+      { target: "oregon", source: "nevada", strength: 0.1 },
+      { target: "oregon", source: "washington", strength: 0.1 },
+      { target: "oregon", source: "idaho", strength: 0.1 },
+      { target: "washington", source: "oregon", strength: 0.1 },
+      { target: "washington", source: "idaho", strength: 0.1 },
+      { target: "arizona", source: "california", strength: 0.1 },
+      { target: "arizona", source: "nevada", strength: 0.1 },
+      { target: "arizona", source: "utah", strength: 0.1 },
+      { target: "arizona", source: "colorado", strength: 0.1 },
+      { target: "arizona", source: "newMexico", strength: 0.1 },
+      { target: "nevada", source: "california", strength: 0.1 },
+      { target: "nevada", source: "oregon", strength: 0.1 },
+      { target: "nevada", source: "idaho", strength: 0.1 },
+      { target: "nevada", source: "utah", strength: 0.1 },
+      { target: "nevada", source: "arizona", strength: 0.1 },
+      { target: "idaho", source: "washington", strength: 0.1 },
+      { target: "idaho", source: "oregon", strength: 0.1 },
+      { target: "idaho", source: "nevada", strength: 0.1 },
+      { target: "idaho", source: "utah", strength: 0.1 },
+      { target: "idaho", source: "wyoming", strength: 0.1 },
+      { target: "idaho", source: "montana", strength: 0.1 },
+      { target: "utah", source: "idaho", strength: 0.1 },
+      { target: "utah", source: "nevada", strength: 0.1 },
+      { target: "utah", source: "arizona", strength: 0.1 },
+      { target: "utah", source: "newMexico", strength: 0.1 },
+      { target: "utah", source: "colorado", strength: 0.1 },
+      { target: "utah", source: "wyoming", strength: 0.1 },
+      { target: "montana", source: "idaho", strength: 0.1 },
+      { target: "montana", source: "wyoming", strength: 0.1 },
+      { target: "montana", source: "southDakota", strength: 0.1 },
+      { target: "montana", source: "northDakota", strength: 0.1 },
+      { target: "wyoming", source: "montana", strength: 0.1 },
+      { target: "wyoming", source: "idaho", strength: 0.1 },
+      { target: "wyoming", source: "utah", strength: 0.1 },
+      { target: "wyoming", source: "colorado", strength: 0.1 },
+      { target: "wyoming", source: "nebraska", strength: 0.1 },
+      { target: "wyoming", source: "southDakota", strength: 0.1 },
+      { target: "wyoming", source: "northDakota", strength: 0.1 },
+      { target: "colorado", source: "wyoming", strength: 0.1 },
+      { target: "colorado", source: "utah", strength: 0.1 },
+      { target: "colorado", source: "arizona", strength: 0.1 },
+      { target: "colorado", source: "newMexico", strength: 0.1 },
+      { target: "colorado", source: "oklahoma", strength: 0.1 },
+      { target: "colorado", source: "kansas", strength: 0.1 },
+      { target: "colorado", source: "nebraska", strength: 0.1 },
+      { target: "newMexico", source: "colorado", strength: 0.1 },
+      { target: "newMexico", source: "utah", strength: 0.1 },
+      { target: "newMexico", source: "arizona", strength: 0.1 },
+      { target: "newMexico", source: "texas", strength: 0.1 },
+      { target: "newMexico", source: "oklahoma", strength: 0.1 },
+      { target: "texas", source: "oklahoma", strength: 0.1 },
+      { target: "texas", source: "newMexico", strength: 0.1 },
+      { target: "texas", source: "louisiana", strength: 0.1 },
+      { target: "texas", source: "arkansas", strength: 0.1 },
+      { target: "oklahoma", source: "kansas", strength: 0.1 },
+      { target: "oklahoma", source: "colorado", strength: 0.1 },
+      { target: "oklahoma", source: "newMexico", strength: 0.1 },
+      { target: "oklahoma", source: "texas", strength: 0.1 },
+      { target: "oklahoma", source: "arkansas", strength: 0.1 },
+      { target: "oklahoma", source: "missouri", strength: 0.1 },
+      { target: "kansas", source: "nebraska", strength: 0.1 },
+      { target: "kansas", source: "colorado", strength: 0.1 },
+      { target: "kansas", source: "oklahoma", strength: 0.1 },
+      { target: "kansas", source: "missouri", strength: 0.1 },
+      { target: "nebraska", source: "southDakota", strength: 0.1 },
+      { target: "nebraska", source: "wyoming", strength: 0.1 },
+      { target: "nebraska", source: "colorado", strength: 0.1 },
+      { target: "nebraska", source: "kansas", strength: 0.1 },
+      { target: "nebraska", source: "missouri", strength: 0.1 },
+      { target: "nebraska", source: "iowa", strength: 0.1 },
+      { target: "southDakota", source: "northDakota", strength: 0.1 },
+      { target: "southDakota", source: "montana", strength: 0.1 },
+      { target: "southDakota", source: "wyoming", strength: 0.1 },
+      { target: "southDakota", source: "nebraska", strength: 0.1 },
+      { target: "southDakota", source: "iowa", strength: 0.1 },
+      { target: "southDakota", source: "minnesota", strength: 0.1 },
+      { target: "northDakota", source: "montana", strength: 0.1 },
+      { target: "northDakota", source: "southDakota", strength: 0.1 },
+      { target: "northDakota", source: "minnesota", strength: 0.1 },
+      { target: "louisiana", source: "texas", strength: 0.1 },
+      { target: "louisiana", source: "arkansas", strength: 0.1 },
+      { target: "louisiana", source: "mississippi", strength: 0.1 },
+      { target: "arkansas", source: "mississippi", strength: 0.1 },
+      { target: "arkansas", source: "missouri", strength: 0.1 },
+      { target: "arkansas", source: "oklahoma", strength: 0.1 },
+      { target: "arkansas", source: "texas", strength: 0.1 },
+      { target: "arkansas", source: "louisiana", strength: 0.1 },
+      { target: "arkansas", source: "tennessee", strength: 0.1 },
+      { target: "missouri", source: "iowa", strength: 0.1 },
+      { target: "missouri", source: "nebraska", strength: 0.1 },
+      { target: "missouri", source: "kansas", strength: 0.1 },
+      { target: "missouri", source: "oklahoma", strength: 0.1 },
+      { target: "missouri", source: "arkansas", strength: 0.1 },
+      { target: "missouri", source: "tennessee", strength: 0.1 },
+      { target: "missouri", source: "kentucky", strength: 0.1 },
+      { target: "missouri", source: "illinois", strength: 0.1 },
+      { target: "iowa", source: "minnesota", strength: 0.1 },
+      { target: "iowa", source: "southDakota", strength: 0.1 },
+      { target: "iowa", source: "nebraska", strength: 0.1 },
+      { target: "iowa", source: "missouri", strength: 0.1 },
+      { target: "iowa", source: "illinois", strength: 0.1 },
+      { target: "iowa", source: "wisconsin", strength: 0.1 },
+      { target: "minnesota", source: "northDakota", strength: 0.1 },
+      { target: "minnesota", source: "southDakota", strength: 0.1 },
+      { target: "minnesota", source: "iowa", strength: 0.1 },
+      { target: "minnesota", source: "wisconsin", strength: 0.1 },
+      { target: "mississippi", source: "louisiana", strength: 0.1 },
+      { target: "mississippi", source: "arkansas", strength: 0.1 },
+      { target: "mississippi", source: "tennessee", strength: 0.1 },
+      { target: "mississippi", source: "alabama", strength: 0.1 },
+      { target: "tennessee", source: "kentucky", strength: 0.1 },
+      { target: "tennessee", source: "missouri", strength: 0.1 },
+      { target: "tennessee", source: "arkansas", strength: 0.1 },
+      { target: "tennessee", source: "mississippi", strength: 0.1 },
+      { target: "tennessee", source: "alabama", strength: 0.1 },
+      { target: "tennessee", source: "georgia", strength: 0.1 },
+      { target: "tennessee", source: "northCarolina", strength: 0.1 },
+      { target: "tennessee", source: "southCarolina", strength: 0.1 },
+      { target: "kentucky", source: "ohio", strength: 0.1 },
+      { target: "kentucky", source: "indiana", strength: 0.1 },
+      { target: "kentucky", source: "illinois", strength: 0.1 },
+      { target: "kentucky", source: "missouri", strength: 0.1 },
+      { target: "kentucky", source: "tennessee", strength: 0.1 },
+      { target: "kentucky", source: "virginia", strength: 0.1 },
+      { target: "kentucky", source: "westVirginia", strength: 0.1 },
+      { target: "illinois", source: "kentucky", strength: 0.1 },
+      { target: "illinois", source: "indiana", strength: 0.1 },
+      { target: "illinois", source: "wisconsin", strength: 0.1 },
+      { target: "illinois", source: "iowa", strength: 0.1 },
+      { target: "illinois", source: "missouri", strength: 0.1 },
+      { target: "wisconsin", source: "illinois", strength: 0.1 },
+      { target: "wisconsin", source: "michigan", strength: 0.1 },
+      { target: "wisconsin", source: "minnesota", strength: 0.1 },
+      { target: "wisconsin", source: "iowa", strength: 0.1 },
+      { target: "alabama", source: "tennessee", strength: 0.1 },
+      { target: "alabama", source: "mississippi", strength: 0.1 },
+      { target: "alabama", source: "georgia", strength: 0.1 },
+      { target: "alabama", source: "florida", strength: 0.1 },
+      { target: "georgia", source: "florida", strength: 0.1 },
+      { target: "georgia", source: "southCarolina", strength: 0.1 },
+      { target: "georgia", source: "northCarolina", strength: 0.1 },
+      { target: "georgia", source: "tennessee", strength: 0.1 },
+      { target: "georgia", source: "alabama", strength: 0.1 },
+      { target: "florida", source: "georgia", strength: 0.1 },
+      { target: "florida", source: "alabama", strength: 0.1 },
+      { target: "southCarolina", source: "northCarolina", strength: 0.1 },
+      { target: "southCarolina", source: "georgia", strength: 0.1 },
+      { target: "northCarolina", source: "southCarolina", strength: 0.1 },
+      { target: "northCarolina", source: "tennessee", strength: 0.1 },
+      { target: "northCarolina", source: "virginia", strength: 0.1 },
+      { target: "virginia", source: "washingtonDC", strength: 0.1 },
+      { target: "virginia", source: "maryland", strength: 0.1 },
+      { target: "virginia", source: "westVirginia", strength: 0.1 },
+      { target: "virginia", source: "kentucky", strength: 0.1 },
+      { target: "virginia", source: "tennessee", strength: 0.1 },
+      { target: "virginia", source: "northCarolina", strength: 0.1 },
+      { target: "washingtonDC", source: "maryland", strength: 0.1 },
+      { target: "washingtonDC", source: "virginia", strength: 0.1 },
+      { target: "westVirginia", source: "virginia", strength: 0.1 },
+      { target: "westVirginia", source: "maryland", strength: 0.1 },
+      { target: "westVirginia", source: "ohio", strength: 0.1 },
+      { target: "westVirginia", source: "kentucky", strength: 0.1 },
+      { target: "indiana", source: "kentucky", strength: 0.1 },
+      { target: "indiana", source: "ohio", strength: 0.1 },
+      { target: "indiana", source: "michigan", strength: 0.1 },
+      { target: "indiana", source: "illinois", strength: 0.1 },
+      { target: "ohio", source: "indiana", strength: 0.1 },
+      { target: "ohio", source: "michigan", strength: 0.1 },
+      { target: "ohio", source: "kentucky", strength: 0.1 },
+      { target: "ohio", source: "westVirginia", strength: 0.1 },
+      { target: "ohio", source: "pennsylvania", strength: 0.1 },
+      { target: "michigan", source: "wisconsin", strength: 0.1 },
+      { target: "michigan", source: "ohio", strength: 0.1 },
+      { target: "michigan", source: "indiana", strength: 0.1 },
+      { target: "maryland", source: "washingtonDC", strength: 0.1 },
+      { target: "maryland", source: "pennsylvania", strength: 0.1 },
+      { target: "maryland", source: "virginia", strength: 0.1 },
+      { target: "maryland", source: "westVirginia", strength: 0.1 },
+      { target: "maryland", source: "delaware", strength: 0.1 },
+      { target: "delaware", source: "maryland", strength: 0.1 },
+      { target: "delaware", source: "pennsylvania", strength: 0.1 },
+      { target: "delaware", source: "newJersey", strength: 0.1 },
+      { target: "pennsylvania", source: "newYork", strength: 0.1 },
+      { target: "pennsylvania", source: "ohio", strength: 0.1 },
+      { target: "pennsylvania", source: "westVirginia", strength: 0.1 },
+      { target: "pennsylvania", source: "maryland", strength: 0.1 },
+      { target: "pennsylvania", source: "delaware", strength: 0.1 },
+      { target: "pennsylvania", source: "newJersey", strength: 0.1 },
+      { target: "newJersey", source: "newYork", strength: 0.1 },
+      { target: "newJersey", source: "pennsylvania", strength: 0.1 },
+      { target: "newJersey", source: "delaware", strength: 0.1 },
+      { target: "newYork", source: "pennsylvania", strength: 0.1 },
+      { target: "newYork", source: "newJersey", strength: 0.1 },
+      { target: "newYork", source: "vermont", strength: 0.1 },
+      { target: "newYork", source: "massachusetts", strength: 0.1 },
+      { target: "newYork", source: "connecticut", strength: 0.1 },
+      { target: "connecticut", source: "newYork", strength: 0.1 },
+      { target: "connecticut", source: "massachusetts", strength: 0.1 },
+      { target: "connecticut", source: "rhodeIsland", strength: 0.1 },
+      { target: "rhodeIsland", source: "massachusetts", strength: 0.1 },
+      { target: "rhodeIsland", source: "connecticut", strength: 0.1 },
+      { target: "massachusetts", source: "connecticut", strength: 0.1 },
+      { target: "massachusetts", source: "newYork", strength: 0.1 },
+      { target: "massachusetts", source: "rhodeIsland", strength: 0.1 },
+      { target: "massachusetts", source: "vermont", strength: 0.1 },
+      { target: "massachusetts", source: "newHampshire", strength: 0.1 },
+      { target: "vermont", source: "newYork", strength: 0.1 },
+      { target: "vermont", source: "massachusetts", strength: 0.1 },
+      { target: "newHampshire", source: "vermont", strength: 0.1 },
+      { target: "newHampshire", source: "maine", strength: 0.1 },
+      { target: "newHampshire", source: "massachusetts", strength: 0.1 },
+      { target: "maine", source: "newHampshire", strength: 0.1 },
+    ];
+
+    var nodes = [...baseNodes];
+    var links = [...baseLinks];
+
+    function getNeighbors(node) {
+      return baseLinks.reduce(
+        function (neighbors, link) {
+          if (link.target.id === node.id) {
+            neighbors.push(link.source.id);
+          } else if (link.source.id === node.id) {
+            neighbors.push(link.target.id);
+          }
+          return neighbors;
+        },
+        [node.id]
+      );
+    }
+
+    function isNeighborLink(node, link) {
+      return link.target.id === node.id || link.source.id === node.id;
+    }
+
+    function getNodeColor(node, neighbors) {
+      if (Array.isArray(neighbors) && neighbors.indexOf(node.id) > -1) {
+        if (node.level % 2 == 1) {
+          return "#30B688";
+        } else {
+          return "#E0BAD7";
+        }
+      }
+
+      if (node.level == 1) {
+        return "#B27CB2";
+      }
+      if (node.level == 2) {
+        return "#E1CCE1";
+      }
+      if (node.level == 3) {
+        return "#1EC6B9";
+      }
+      if (node.level == 4) {
+        return "#86E0D8";
+      }
+      if (node.level == 5) {
+        return "#2A2F53";
+      }
+      if (node.level == 6) {
+        return "#7378A0";
+      }
+      if (node.level == 7) {
+        return "#6D7A2E";
+      }
+      if (node.level == 8) {
+        return "#B5D122";
+      }
+      if (node.level == 9) {
+        return "#9F5636";
+      }
+      if (node.level == 10) {
+        return "#F9814E";
+      }
+      if (node.level == 11) {
+        return "#E54247";
+      }
+      if (node.level == 12) {
+        return "#E08F92";
+      }
+    }
+
+    function getLinkColor(node, link) {
+      return isNeighborLink(node, link) ? "#30B688" : "#E5E5E5";
+    }
+
+    function getTextColor(node, neighbors) {
+      return Array.isArray(neighbors) && neighbors.indexOf(node.id) > -1
+        ? "#30B688"
+        : "black";
+    }
+
+    var width = window.innerWidth;
+    var height = window.innerHeight;
+
+    var svg = d3.select("svg");
+    svg.attr("width", width).attr("height", height);
+
+    var linkElements, nodeElements, textElements;
+
+    // we use svg groups to logically group the elements together
+    var linkGroup = svg.append("g").attr("class", "links");
+    var nodeGroup = svg.append("g").attr("class", "nodes");
+    var textGroup = svg.append("g").attr("class", "texts");
+
+    // we use this reference to select/deselect
+    // after clicking the same element twice
+    var selectedId;
+
+    // simulation setup with all forces
+    var linkForce = d3
+      .forceLink()
+      .id(function (link) {
+        return link.id;
+      })
+      .strength(function (link) {
+        return link.strength;
+      });
+
+    var simulation = d3
+      .forceSimulation()
+      .force("link", linkForce)
+      .force("charge", d3.forceManyBody().strength(-120))
+      .force("center", d3.forceCenter(width / 2, height / 2));
+
+    var dragDrop = d3
+      .drag()
+      .on("start", function (node) {
+        node.fx = node.x;
+        node.fy = node.y;
+      })
+      .on("drag", function (node) {
+        simulation.alphaTarget(0.7).restart();
+        node.fx = d3.event.x;
+        node.fy = d3.event.y;
+      })
+      .on("end", function (node) {
+        if (!d3.event.active) {
+          simulation.alphaTarget(0);
+        }
+        node.fx = null;
+        node.fy = null;
+      });
+
+    // select node is called on every click
+    // we either update the data according to the selection
+    // or reset the data if the same node is clicked twice
+    function selectNode(selectedNode) {
+      if (selectedId === selectedNode.id) {
+        selectedId = undefined;
+        resetData();
+        updateSimulation();
+      } else {
+        selectedId = selectedNode.id;
+        updateData(selectedNode);
+        updateSimulation();
+      }
+
+      var neighbors = getNeighbors(selectedNode);
+
+      // we modify the styles to highlight selected nodes
+      nodeElements.attr("fill", function (node) {
+        return getNodeColor(node, neighbors);
+      });
+      textElements.attr("fill", function (node) {
+        return getTextColor(node, neighbors);
+      });
+      linkElements.attr("stroke", function (link) {
+        return getLinkColor(selectedNode, link);
+      });
+    }
+
+    // this helper simple adds all nodes and links
+    // that are missing, to recreate the initial state
+    function resetData() {
+      var nodeIds = nodes.map(function (node) {
+        return node.id;
+      });
+
+      baseNodes.forEach(function (node) {
+        if (nodeIds.indexOf(node.id) === -1) {
+          nodes.push(node);
+        }
+      });
+
+      links = baseLinks;
+    }
+
+    // diffing and mutating the data
+    function updateData(selectedNode) {
+      var neighbors = getNeighbors(selectedNode);
+      var newNodes = baseNodes.filter(function (node) {
+        return neighbors.indexOf(node.id) > -1 || node.level === 1;
+      });
+
+      var diff = {
+        removed: nodes.filter(function (node) {
+          return newNodes.indexOf(node) === -1;
+        }),
+        added: newNodes.filter(function (node) {
+          return nodes.indexOf(node) === -1;
+        }),
+      };
+
+      diff.removed.forEach(function (node) {
+        nodes.splice(nodes.indexOf(node), 1);
+      });
+      diff.added.forEach(function (node) {
+        nodes.push(node);
+      });
+
+      links = baseLinks.filter(function (link) {
+        return (
+          link.target.id === selectedNode.id ||
+          link.source.id === selectedNode.id
+        );
+      });
+    }
+
+    function updateGraph() {
+      // links
+      linkElements = linkGroup.selectAll("line").data(links, function (link) {
+        return link.target.id + link.source.id;
+      });
+
+      linkElements.exit().remove();
+
+      var linkEnter = linkElements
+        .enter()
+        .append("line")
+        .attr("stroke-width", 1)
+        .attr("stroke", "rgba(50, 50, 50, 0.2)");
+
+      linkElements = linkEnter.merge(linkElements);
+
+      // nodes
+      nodeElements = nodeGroup.selectAll("circle").data(nodes, function (node) {
+        return node.id;
+      });
+
+      nodeElements.exit().remove();
+      textElements = textGroup.selectAll("text").data(nodes, function (node) {
+        return node.id;
+      });
+      textElements.exit().remove();
+
+      var textEnter = textElements
+        .enter()
+        .append("text")
+        .text(function (node) {
+          return node.label;
+        })
+        .attr("font-family", "Roboto Slab")
+        .attr("font-size", 15)
+        .attr("dx", 15)
+        .attr("dy", 4);
+
+      textElements = textEnter.merge(textElements);
+
+      var div = d3
+        .select("body")
+        .append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0);
+
+      var nodeEnter = nodeElements
+        .enter()
+        .append("circle")
+        .attr("r", function (node) {
+          if (node.level == 1) {
+            return 7;
+          }
+          if (node.level == 2) {
+            return 6;
+          }
+          if (node.level == 3) {
+            return 9;
+          }
+          if (node.level == 4) {
+            return 8;
+          }
+          if (node.level == 5) {
+            return 11;
+          }
+          if (node.level == 6) {
+            return 10;
+          }
+          if (node.level == 7) {
+            return 13;
+          }
+          if (node.level == 8) {
+            return 12;
+          }
+          if (node.level == 9) {
+            return 15;
+          }
+          if (node.level == 10) {
+            return 14;
+          }
+          if (node.level == 11) {
+            return 17;
+          }
+          if (node.level == 12) {
+            return 16;
+          }
+        })
+        .attr("fill", function (node) {
+          if (node.level == 1) {
+            return "#B27CB2";
+          }
+          if (node.level == 2) {
+            return "#E1CCE1";
+          }
+          if (node.level == 3) {
+            return "#1EC6B9";
+          }
+          if (node.level == 4) {
+            return "#86E0D8";
+          }
+          if (node.level == 5) {
+            return "#2A2F53";
+          }
+          if (node.level == 6) {
+            return "#7378A0";
+          }
+          if (node.level == 7) {
+            return "#6D7A2E";
+          }
+          if (node.level == 8) {
+            return "#B5D122";
+          }
+          if (node.level == 9) {
+            return "#9F5636";
+          }
+          if (node.level == 10) {
+            return "#F9814E";
+          }
+          if (node.level == 11) {
+            return "#E54247";
+          }
+          if (node.level == 12) {
+            return "#E08F92";
+          }
+        })
+        .call(dragDrop)
+        // we link the selectNode method here
+        // to update the graph on every click
+        .on("click", selectNode)
+        .on("mouseover", function (d) {
+          div.transition().duration(200).style("opacity", 0.9);
+          div
+            .html(d.fullName + "<br/>" + d.cases + "<br/>" + d.deaths)
+            .style("left", d3.event.pageX + "px")
+            .style("top", d3.event.pageY - 28 + "px");
+        })
+        .on("mouseout", function (d) {
+          div.transition().duration(500).style("opacity", 0);
+        });
+
+      nodeElements = nodeEnter.merge(nodeElements);
+
+      // texts
+    }
+
+    function updateSimulation() {
+      updateGraph();
+
+      simulation.nodes(nodes).on("tick", () => {
+        nodeElements
+          .attr("cx", function (node) {
+            return node.x;
+          })
+          .attr("cy", function (node) {
+            return node.y;
+          });
+        textElements
+          .attr("x", function (node) {
+            return node.x;
+          })
+          .attr("y", function (node) {
+            return node.y;
+          });
+        linkElements
+          .attr("x1", function (link) {
+            return link.source.x;
+          })
+          .attr("y1", function (link) {
+            return link.source.y;
+          })
+          .attr("x2", function (link) {
+            return link.target.x;
+          })
+          .attr("y2", function (link) {
+            return link.target.y;
+          });
+      });
+
+      simulation.force("link").links(links);
+      simulation.alphaTarget(0.7).restart();
+    }
+
+    // last but not least, we call updateSimulation
+    // to trigger the initial render
+    updateSimulation();
+  </script>
+</body>
